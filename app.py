@@ -77,14 +77,14 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
 # Main content
 with ui.layout_columns():
     with ui.card(full_screen=True):  
-        ui.h2("Penguins Data Table")
+        ui.h6("Penguins Data Table")
 
         @render.data_frame
         def render_penguins_data_table():
             return render.DataTable(penguins_df)
             
     with ui.card(full_screen=True):
-        ui.h2("Penguins Data Grid")
+        ui.h6("Penguins Data Grid")
 
         @render.data_frame
         def render_penguins_data_grid():
