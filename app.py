@@ -1,54 +1,19 @@
+
 import plotly.express as px
 from shiny.express import input, ui
 from shinywidgets import render_plotly
-import palmerpenguins # This package provides the Palmer Penguins dataset
-
-# ------------------------------------------------------
-Get the Data
-# ------------------------------------------------------
-# Column names for the penguins data set include: 
-# - species: penguin species
-# - island: island name 
-# - bill_length_mm: length of the bill in millimeters
-# - bill_depth_mm: depth of the bill in millimeters
-# - flipper_length_mm: length of the flipper in millimeters
-# - body_mass_g: body mass in grams
-# - sex: MALE or FEMALE
-
-# Load the dataset into the pandas dataframe
-# Use the built-in function to load the Palmer Penguins dataset
-penguins_df = palmerpenguins.load_penguins()
-
-# ------------------------------------------------------
-# Define User Interface (ui)
-# ------------------------------------------------------
-ui.page_opts(title="Penguin Data DBlake", fillable=True)
-with ui.layout_columns():
-
-    @render_plotly
-    def plot1():
-        return px.histogram(px.data.tips(), y="tip")
-
-    @render_plotly
-    def plot2():
-        return px.histogram(px.data.tips(), y="total_bill")
-
-
-# -------------------------------------------------------
-import plotly.express as px
-from shiny.express import input, ui
-from shinywidgets import render_plotly
-import palmerpenguins # This package provides the Palmer Penguins dataset
+from palmerpenguins import load_penguins # This package provides the Palmer Penguins dataset
 import pandas as pd 
 import seaborn as sns
 from shiny import reactive, render, req
 
 # Use the built-in function to load the Palmer Penguins dataset
-penguins_df = palmerpenguins.load_penguins()
+penguins_df = load_penguins()
 
 #name the page
 ui.page_opts(title="Penguin Data Desiree Blake", fillable=True)
-        
+
+
 # Add a Shiny UI sidebar for user interaction
 # Use the ui.sidebar() function to create a sidebar
 # Set the open parameter to "open" to make the sidebar open by default
@@ -73,7 +38,7 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
 #   pass in two arguments:
 #   the name of the input (in quotes), e.g. "plotly_bin_count"
 #   the label for the input (in quotes)
-    ui.input_numeric("plotly_bin_count", "Number of Plotly Histogram Bins", 30)
+    ui.input_numeric("plotly_bin_count", "Number of Plotly Histogram Bins", 5)
 
 # Use ui.input_slider() to create a slider input for the number of Seaborn bins
 #   pass in four arguments:
@@ -82,7 +47,7 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
 #   the minimum value for the input (as an integer)
 #   the maximum value for the input (as an integer)
 #   the default value for the input (as an integer)
-    ui.input_slider("seaborn_bin_count", "Number of Seaborn Bins", 1, 100, 20)
+    ui.input_slider("seaborn_bin_count", "Number of Seaborn Bins", 0, 20, 5)
 
 # Use ui.hr() to add a horizontal rule to the sidebar
     ui.hr()
@@ -97,7 +62,7 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
     ui.input_checkbox_group(
         "selected_species_list", 
         "Select Species", 
-        ["Adelie", "Gentoo", "Chinstrap"], selected=["Adelie"], inline=False
+        ["Adelie", "Gentoo", "Chinstrap"], selected=["Adelie", "Gentoo", "Chinstrap"], inline=False
     )
 
 
@@ -109,29 +74,31 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
 
 # Creates a DataTable showing all data
 
-with ui.layout_columns(col_widths=(4, 8)):        
-    with ui.card():
-        "DataTable"
+# Main content
+with ui.layout_columns():
+    with ui.card(full_screen=True):  
+        ui.h2("Penguins Data Table")
 
-    ui.h2("Penguins Table")
+        @render.data_frame
+        def render_penguins_data_table():
+            return render.DataTable(penguins_df)
+            
+    with ui.card(full_screen=True):
+        ui.h2("Penguins Data Grid")
 
-    @render.data_frame
-    def render_penguins_table():
-        return penguins_df
+        @render.data_frame
+        def render_penguins_data_grid():
+            return render.DataGrid(penguins_df)
 
-@render.data_frame
-def penguins_data():
-    return render.DataGrid(penguins_df, row_selection_mode="multiple") 
-
+with ui.layout_columns():
 # Creates a Plotly Histogram showing all species
-
-with ui.card(full_screen=True):
-    ui.card_header("Plotly Histogram")
+    with ui.card(full_screen=True):
+        ui.card_header("Plotly Histogram")
     
-    @render_plotly
-    def plotly_histogram():
-        return px.histogram(
-            penguins_df, x=input.selected_attribute(), nbins=input.plotly_bin_count()
+        @render_plotly
+        def plotly_histogram():
+            return px.histogram(
+                penguins_df, x=input.selected_attribute(), nbins=input.plotly_bin_count()
         )
 
 # Creates a Seaborn Histogram showing all species
@@ -165,3 +132,16 @@ with ui.card(full_screen=True):
             },
             size_max=8, 
                          )
+
+# --------------------------------------------------------
+# Reactive calculations and effects
+# --------------------------------------------------------
+
+# Add a reactive calculation to filter the data
+# By decorating the function with @reactive, we can use the function to filter the data
+# The function will be called whenever an input functions used to generate that output changes.
+# Any output that depends on the reactive function (e.g., filtered_data()) will be updated when the data changes.
+
+@reactive.calc
+def filtered_data():
+    return penguins_df
