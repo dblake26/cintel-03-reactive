@@ -17,7 +17,7 @@ ui.page_opts(title="Desiree's Penguin Data", fillable=True)
 # Add a Shiny UI sidebar for user interaction
 with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the sidebar open by default
     # Add a second-level header to the sidebar
-    ui.h2("Sidebar")
+    ui.h5("Sidebar")
 
 # Use ui.input_selectize() to create a dropdown input to choose a column
     ui.input_selectize(
