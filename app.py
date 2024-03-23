@@ -11,7 +11,7 @@ from shiny import reactive, render, req
 penguins_df = load_penguins()
 
 #name the page
-ui.page_opts(title="Penguin Data Desiree Blake", fillable=True)
+ui.page_opts(title="Desiree's Penguin Data", fillable=True)
 
 
 # Add a Shiny UI sidebar for user interaction
@@ -38,7 +38,7 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
 #   pass in two arguments:
 #   the name of the input (in quotes), e.g. "plotly_bin_count"
 #   the label for the input (in quotes)
-    ui.input_numeric("plotly_bin_count", "Number of Plotly Histogram Bins", 5)
+    ui.input_numeric("plotly_bin_count", "Number of Plotly Histogram Bins", 40)
 
 # Use ui.input_slider() to create a slider input for the number of Seaborn bins
 #   pass in four arguments:
@@ -47,10 +47,7 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
 #   the minimum value for the input (as an integer)
 #   the maximum value for the input (as an integer)
 #   the default value for the input (as an integer)
-    ui.input_slider("seaborn_bin_count", "Number of Seaborn Bins", 0, 20, 5)
-
-# Use ui.hr() to add a horizontal rule to the sidebar
-    ui.hr()
+    ui.input_slider("seaborn_bin_count", "Number of Seaborn Bins", 1, 40, 20)
 
 # Use ui.input_checkbox_group() to create a checkbox group input to filter the species
 #   pass in five arguments:
@@ -62,10 +59,13 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
     ui.input_checkbox_group(
         "selected_species_list", 
         "Select Species", 
-        ["Adelie", "Gentoo", "Chinstrap"], selected=["Adelie", "Gentoo", "Chinstrap"], inline=False
+        ["Adelie", "Gentoo", "Chinstrap"], 
+        selected=["Adelie", "Gentoo", "Chinstrap"], 
+        inline=False
     )
 
-
+# Use ui.hr() to add a horizontal rule to the sidebar
+    ui.hr()
 
 # Use ui.a() to add a hyperlink to Github
     ui.a("GitHub", href="https://github.com/dblake26/cintel-02-data", target="_blank")
@@ -77,51 +77,57 @@ with ui.sidebar(open="open"):  # Set the open parameter to "open" to make the si
 # Main content
 with ui.layout_columns():
     with ui.card(full_screen=True):  
-        ui.h6("Penguins Data Table")
+        ui.h2("Penguins Data Table")
 
         @render.data_frame
         def render_penguins_data_table():
             return render.DataTable(filtered_data())
             
     with ui.card(full_screen=True):
-        ui.h6("Penguins Data Grid")
+        ui.h2("Penguins Data Grid")
 
         @render.data_frame
         def render_penguins_data_grid():
             return render.DataGrid(filtered_data())
+# added a horizontal rule
+ui.hr()
 
 with ui.layout_columns():
 # Creates a Plotly Histogram showing all species
     with ui.card(full_screen=True):
-        ui.card_header("Plotly Histogram")
+        ui.h2("Species Plotly Histogram")
     
         @render_plotly
         def plotly_histogram():
             return px.histogram(
-                filtered_data(), x=input.selected_attribute(), nbins=input.plotly_bin_count()
+                filtered_data(), 
+                x=input.selected_attribute(), 
+                nbins=input.plotly_bin_count()
         )
 
 # Creates a Seaborn Histogram showing all species
 
 with ui.card(full_screen=True):
-    ui.card_header("Seaborn Histogram")
+    ui.h2("Seaborn Histogram")
 
     @render.plot(alt="Seaborn Histogram")
     def seaborn_histogram():
-        histplot = sns.histplot(data=filtered_data(), x="body_mass_g", bins=input.seaborn_bin_count())
+        histplot = sns.histplot(data=filtered_data(), 
+                                x="body_mass_g",
+                                bins=input.seaborn_bin_count())
         histplot.set_title("Palmer Penguins")
-        histplot.set_xlabel("Mass")
-        histplot.set_ylabel("Count")
+       seaborn_plot.set_ylabel("Measurement")
         return histplot
 
 # Creates a Plotly Scatterplot showing all species
 
 with ui.card(full_screen=True):
-    ui.card_header("Plotly Scatterplot: Species")
+    ui.h2("Plotly Scatterplot: Species")
 
     @render_plotly
     def plotly_scatterplot():
-        return px.scatter(filtered_data(),
+        return px.scatter(
+            filtered_data(),
             x="bill_length_mm",
             y="body_mass_g",
             color="species",
